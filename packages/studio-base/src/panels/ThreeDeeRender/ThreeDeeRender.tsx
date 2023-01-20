@@ -744,10 +744,14 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
       }
     }
 
-    const hasReadMessages = lastReadMessage !== allFramesCursor.lastReadMessage;
+    // want to avoid setting anything if nothing has changed
+    if (lastReadMessage === allFramesCursor.lastReadMessage) {
+      return;
+    }
+
     setAllFramesCursor({ index: cursor, currentTimeReached, lastReadMessage });
     // want to re-render if frames were read and if the current time has been reached to avoid showing intermediate state
-    if (hasReadMessages && currentTimeReached && compare(currentTimeReached, currentTime) === 0) {
+    if (currentTimeReached && compare(currentTimeReached, currentTime) === 0) {
       renderRef.current.needsRender = true;
     }
   }, [allFramesCursor, renderer, currentTime, allFrames]);
