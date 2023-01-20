@@ -16,7 +16,11 @@ export type ForwardedMenuEvent =
   | "open-help"
   | "open-account";
 
-export type ForwardedWindowEvent = "enter-full-screen" | "leave-full-screen";
+export type ForwardedWindowEvent =
+  | "enter-full-screen"
+  | "leave-full-screen"
+  | "maximize"
+  | "unmaximize";
 
 interface NativeMenuBridge {
   // Events from the native window are available in the main process but not the renderer, so we forward them through the bridge.
@@ -85,6 +89,15 @@ interface Desktop {
   // Uninstall an extension. Returns true if the extension was found and uninstalled, or false if it
   // was not found (i.e. already uninstalled)
   uninstallExtension: (id: string) => Promise<boolean>;
+
+  /** Handle a double-click on the custom title bar */
+  handleTitleBarDoubleClick(): void;
+
+  isMaximized(): boolean;
+  minimizeWindow(): void;
+  maximizeWindow(): void;
+  unmaximizeWindow(): void;
+  closeWindow(): void;
 }
 
 export type { NativeMenuBridge, Storage, StorageContent, Desktop, DesktopExtension };

@@ -19,6 +19,7 @@ import Stack from "@foxglove/studio-base/components/Stack";
 import { useAnalytics } from "@foxglove/studio-base/context/AnalyticsContext";
 import { useAppConfigurationValue } from "@foxglove/studio-base/hooks/useAppConfigurationValue";
 import { AppEvent } from "@foxglove/studio-base/services/IAnalytics";
+import isDesktopApp from "@foxglove/studio-base/util/isDesktopApp";
 
 const useStyles = makeStyles()({
   checkbox: {
@@ -61,9 +62,14 @@ const features: Feature[] = [
     description: <>Allow editing plot panel data series in the sidebar.</>,
   },
   {
-    key: AppSetting.ENABLE_NEW_UI,
-    name: "Enable new user interface",
-    description: <>Try our redesigned navigation and layout.</>,
+    key: AppSetting.ENABLE_NEW_TOPNAV,
+    name: "New navigation",
+    description: (
+      <>
+        New top navigation bar.
+        {isDesktopApp() && " Restart the app for changes to take effect."}
+      </>
+    ),
   },
 ];
 if (process.env.NODE_ENV === "development") {

@@ -27,10 +27,10 @@ import { makeStyles } from "tss-react/mui";
 import Logger from "@foxglove/log";
 import { AppSetting } from "@foxglove/studio-base/AppSetting";
 import AccountSettings from "@foxglove/studio-base/components/AccountSettingsSidebar/AccountSettings";
-import { AppBar } from "@foxglove/studio-base/components/AppBar";
+import { AppBar, CustomWindowControlsProps } from "@foxglove/studio-base/components/AppBar";
 import { DataSourceSidebar } from "@foxglove/studio-base/components/DataSourceSidebar";
 import DocumentDropListener from "@foxglove/studio-base/components/DocumentDropListener";
-import ExtensionsSidebar from "@foxglove/studio-base/components/ExtensionsSidebar";
+import ExtensionsSettings from "@foxglove/studio-base/components/ExtensionsSettings";
 import KeyListener from "@foxglove/studio-base/components/KeyListener";
 import LayoutBrowser from "@foxglove/studio-base/components/LayoutBrowser";
 import {
@@ -76,6 +76,7 @@ import { useInitialDeepLinkState } from "@foxglove/studio-base/hooks/useInitialD
 import useNativeAppMenuEvent from "@foxglove/studio-base/hooks/useNativeAppMenuEvent";
 import { PlayerPresence } from "@foxglove/studio-base/players/types";
 import { PanelStateContextProvider } from "@foxglove/studio-base/providers/PanelStateContextProvider";
+import isDesktopApp from "@foxglove/studio-base/util/isDesktopApp";
 
 const log = Logger.getLogger(__filename);
 
@@ -139,10 +140,19 @@ function AddPanel() {
   );
 }
 
-type WorkspaceProps = {
+function ExtensionsSidebar() {
+  return (
+    <SidebarContent title="Extensions" disablePadding>
+      <ExtensionsSettings />
+    </SidebarContent>
+  );
+}
+
+type WorkspaceProps = CustomWindowControlsProps & {
   deepLinks?: string[];
   disableSignin?: boolean;
   appBarLeftInset?: number;
+  onAppBarDoubleClick?: () => void;
 };
 
 const DEFAULT_DEEPLINKS = Object.freeze([]);
@@ -198,7 +208,13 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
     AppSetting.SHOW_DEBUG_PANELS,
   );
 
-  const [enableNewUI = false] = useAppConfigurationValue<boolean>(AppSetting.ENABLE_NEW_UI);
+  // Since we can't toggle the title bar on an electron window, keep the setting at its initial
+  // value until the app is reloaded/relaunched.
+  const [currentEnableNewTopNav = false] = useAppConfigurationValue<boolean>(
+    AppSetting.ENABLE_NEW_TOPNAV,
+  );
+  const [initialEnableNewTopNav] = useState(currentEnableNewTopNav);
+  const enableNewTopNav = isDesktopApp() ? initialEnableNewTopNav : currentEnableNewTopNav;
 
   const showSignInForm = currentUserRequired && currentUser == undefined;
 
@@ -283,10 +299,10 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
   useNativeAppMenuEvent(
     "open-preferences",
     useCallback(() => {
-      if (!enableNewUI) {
+      if (!enableNewTopNav) {
         setSelectedSidebarItem("preferences");
       }
-    }, [enableNewUI]),
+    }, [enableNewTopNav]),
   );
 
   useNativeAppMenuEvent(
@@ -504,7 +520,6 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
         { iconName: "PanelSettings", title: "Panel settings", component: PanelSettings },
       ],
       ["variables", { iconName: "Variable2", title: "Variables", component: VariablesSidebar }],
-      ["extensions", { iconName: "AddIn", title: "Extensions", component: ExtensionsSidebar }],
     ]);
 
     if (enableStudioLogsSidebar) {
@@ -517,7 +532,13 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
 
     const bottomItems = new Map<SidebarItemKey, SidebarItem>([]);
 
-    if (!enableNewUI) {
+    if (!enableNewTopNav) {
+      topItems.set("extensions", {
+        iconName: "AddIn",
+        title: "Extensions",
+        component: ExtensionsSidebar,
+      });
+
       if (supportsAccountSettings) {
         bottomItems.set("account", {
           iconName: currentUser != undefined ? "BlockheadFilled" : "Blockhead",
@@ -538,7 +559,7 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
     DataSourceSidebarItem,
     playerProblems,
     enableStudioLogsSidebar,
-    enableNewUI,
+    enableNewTopNav,
     supportsAccountSettings,
     currentUser,
   ]);
@@ -593,12 +614,19 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
       <SyncAdapters />
       <KeyListener global keyDownHandlers={keyDownHandlers} />
       <div className={classes.container} ref={containerRef} tabIndex={0}>
-        {enableNewUI && (
+        {enableNewTopNav && (
           <AppBar
             currentUser={currentUser}
             disableSignin={props.disableSignin}
             signIn={signIn}
             leftInset={props.appBarLeftInset}
+            onDoubleClick={props.onAppBarDoubleClick}
+            showCustomWindowControls={props.showCustomWindowControls}
+            isMaximized={props.isMaximized}
+            onMinimizeWindow={props.onMinimizeWindow}
+            onMaximizeWindow={props.onMaximizeWindow}
+            onUnmaximizeWindow={props.onUnmaximizeWindow}
+            onCloseWindow={props.onCloseWindow}
           />
         )}
         <Sidebar
