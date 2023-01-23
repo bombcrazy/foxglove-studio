@@ -447,10 +447,7 @@ export class Renderer extends EventEmitter<RendererEvents> {
     this.measurementTool = new MeasurementTool(this);
     this.publishClickTool = new PublishClickTool(this);
     this.coreSettings = new CoreSettings(this);
-    this.transformTree = new TransformTree(
-      undefined,
-      config.scene.transforms?.enablePreloading === true ? 100 : undefined,
-    );
+    this.transformTree = new TransformTree();
 
     // Internal handlers for TF messages to update the transform tree
     this.addSchemaSubscriptions(FRAME_TRANSFORM_DATATYPES, {
