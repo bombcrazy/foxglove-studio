@@ -546,11 +546,16 @@ export class Renderer extends EventEmitter<RendererEvents> {
   /**
    * Clears internal state such as the TransformTree and removes Renderables from SceneExtensions.
    * This is useful when seeking to a new playback position or when a new data source is loaded.
+   * Allows for specification of transform clearing behavior for tf-preloading cases.
    */
-  public clear(): void {
+  public clear(transformClearType: "clear-all" | "clear-after" = "clear-after"): void {
     // These must be cleared before calling `SceneExtension#removeAllRenderables()` to allow
     // extensions to add transforms and errors back afterward
-    this.transformTree.clearAfter(this.currentTime);
+    if (transformClearType === "clear-after") {
+      this.transformTree.clearAfter(this.currentTime);
+    } else {
+      this.transformTree.clear();
+    }
     this.settings.errors.clear();
 
     for (const extension of this.sceneExtensions.values()) {

@@ -26,7 +26,8 @@ export class ArrayMap<K, V> {
 
   /**
    * Store a key/value tuple in the sorted list. If the key already exists, the
-   * previous entry is overwritten.
+   * previous entry is overwritten. Note adding entries to the middle or beginning of the list
+   * is much slower than adding to the end.
    */
   public set(key: K, value: V): void {
     const index = this.binarySearch(key);
@@ -63,7 +64,8 @@ export class ArrayMap<K, V> {
   /** Removes all elements with keys less than the given key. */
   public removeBefore(key: K): void {
     const index = this.binarySearch(key);
-    this._list.splice(0, index);
+    const lessThanIndex = index >= 0 ? index : ~index;
+    this._list.splice(0, lessThanIndex);
   }
 
   /** Access the first key/value tuple in the list, without modifying the list. */

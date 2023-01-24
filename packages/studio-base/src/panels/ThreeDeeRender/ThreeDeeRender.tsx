@@ -665,7 +665,8 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
 
   // Handle preloaded messages and render a frame if new messages are available
   useEffect(() => {
-    if (!renderer || !currentTime) {
+    // we want didseek to be handled by the renderer first so that transforms aren't cleared after the cursor has been brought up
+    if (!renderer || !currentTime || didSeek) {
       return;
     }
 
@@ -680,7 +681,7 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
           currentTimeReached: { sec: 0, nsec: 0 },
           lastReadMessage: undefined,
         });
-        renderer.clear();
+        renderer.clear("clear-all");
       }
       return;
     }
@@ -754,7 +755,7 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
     if (currentTimeReached && compare(currentTimeReached, currentTime) === 0) {
       renderRef.current.needsRender = true;
     }
-  }, [allFramesCursor, renderer, currentTime, allFrames]);
+  }, [allFramesCursor, renderer, currentTime, allFrames, didSeek]);
 
   // Notify the extension context when our subscription list changes
   useEffect(() => {
@@ -790,6 +791,7 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
   // Flush the renderer's state when the seek count changes
   useEffect(() => {
     if (renderer && didSeek) {
+      let clearBehavior: "clear-after" | "clear-all" = "clear-after";
       if (
         allFramesCursor.currentTimeReached &&
         currentTime != undefined &&
@@ -802,8 +804,13 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
           currentTimeReached: undefined,
           lastReadMessage: undefined,
         });
+        // we will have to iterate through all the tf's again anyways
+        // clearing it all allows for faster read in of new messages previous to existing history
+        clearBehavior = "clear-all" as const;
       }
-      renderer.clear();
+
+      // want to clear after the current time only if preloading is not active or if the seek time is after the previous time
+      renderer.clear(clearBehavior);
       setDidSeek(false);
     }
   }, [renderer, didSeek, allFramesCursor, currentTime]);
