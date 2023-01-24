@@ -11,10 +11,6 @@ import { MouseEvent, useCallback, useContext, useState } from "react";
 import { makeStyles } from "tss-react/mui";
 
 import { FoxgloveLogo } from "@foxglove/studio-base/components/FoxgloveLogo";
-import {
-  MessagePipelineContext,
-  useMessagePipeline,
-} from "@foxglove/studio-base/components/MessagePipeline";
 import { useAnalytics } from "@foxglove/studio-base/context/AnalyticsContext";
 import ConsoleApiContext from "@foxglove/studio-base/context/ConsoleApiContext";
 import {
@@ -26,6 +22,7 @@ import useNativeAppMenuEvent from "@foxglove/studio-base/hooks/useNativeAppMenuE
 import { AppEvent } from "@foxglove/studio-base/services/IAnalytics";
 import ThemeProvider from "@foxglove/studio-base/theme/ThemeProvider";
 
+import { DataSource } from "./DataSource";
 import { HelpIconButton, HelpMenu } from "./Help";
 import { PreferencesDialog, PreferencesIconButton } from "./Preferences";
 import { UserIconButton, UserMenu } from "./User";
@@ -121,8 +118,6 @@ const useStyles = makeStyles<{ leftInset?: number; debugDragRegion?: boolean }>(
   },
 );
 
-const selectPlayerName = (ctx: MessagePipelineContext) => ctx.playerState.name;
-
 export type CustomWindowControlsProps = {
   showCustomWindowControls?: boolean;
   isMaximized?: boolean;
@@ -139,6 +134,7 @@ type AppBarProps = CustomWindowControlsProps & {
   leftInset?: number;
   onDoubleClick?: () => void;
   debugDragRegion?: boolean;
+  onSelectDataSourceAction: () => void;
 };
 
 export function AppBar(props: AppBarProps): JSX.Element {
@@ -154,10 +150,10 @@ export function AppBar(props: AppBarProps): JSX.Element {
     onMaximizeWindow,
     onUnmaximizeWindow,
     onCloseWindow,
+    onSelectDataSourceAction,
     debugDragRegion,
   } = props;
   const { classes, cx } = useStyles({ leftInset, debugDragRegion });
-  const playerName = useMessagePipeline(selectPlayerName);
   const currentUserType = useCurrentUserType();
   const analytics = useAnalytics();
 
@@ -230,11 +226,9 @@ export function AppBar(props: AppBarProps): JSX.Element {
               )}
             </div>
 
-            {playerName && (
-              <Typography className={classes.middle} variant="body2">
-                {playerName}
-              </Typography>
-            )}
+            <div className={classes.middle}>
+              <DataSource onSelectDataSourceAction={onSelectDataSourceAction} />
+            </div>
 
             <div className={classes.end}>
               <div className={classes.endInner}>

@@ -245,7 +245,7 @@ export default function Sidebar<K extends string>(props: SidebarProps<K>): JSX.E
           {bottomTabs}
           {enableMemoryUseIndicator && <MemoryUseIndicator />}
         </Tabs>
-        {enableNewTopNav && (
+        {!enableNewTopNav && (
           <HelpMenu
             anchorEl={helpAnchorEl}
             open={helpMenuOpen}
