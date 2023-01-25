@@ -98,7 +98,7 @@ export function UserPresent(): JSX.Element {
 
 function LabeledAppBar({ label }: React.PropsWithChildren<{ label: string }>) {
   return (
-    <Stack direction="row">
+    <Stack direction="row" alignItems="center">
       <div style={{ flex: "0 0 100px" }}>{label}</div>
       <div style={{ flex: "1 0 auto" }}>
         <AppBar {...actions} />
@@ -146,6 +146,16 @@ export function DataSources(): JSX.Element {
           <LabeledAppBar label={sourceId} {...actions} />
         </MockMessagePipelineProvider>
       ))}
+      <MockMessagePipelineProvider
+        name="example"
+        presence={PlayerPresence.PRESENT}
+        problems={[
+          { severity: "error", message: "example error" },
+          { severity: "warn", message: "example warn" },
+        ]}
+      >
+        <LabeledAppBar label="with problems" {...actions} />
+      </MockMessagePipelineProvider>
     </Stack>
   );
 }
