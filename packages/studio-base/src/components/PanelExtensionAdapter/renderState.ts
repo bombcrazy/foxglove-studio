@@ -2,6 +2,7 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import { filterMap } from "@foxglove/den/collection";
 import Log from "@foxglove/log";
 import { compare, toSec } from "@foxglove/rostime";
 import {
@@ -278,16 +279,21 @@ function initRenderStateBuilder(): BuildRenderStateFn {
       if (newBlocks && prevBlocks !== newBlocks) {
         shouldRender = true;
         const frames: MessageEvent<unknown>[] = (renderState.allFrames = []);
+        // only populate allFrames with topics that the panel wants to preload
+        const topicsToPreloadForPanel = new Set<string>(
+          Array.from(
+            filterMap(subscriptions, (sub) => (sub.preload === true ? sub.topic : undefined)),
+          ),
+        );
         for (const block of newBlocks) {
           if (!block) {
             continue;
           }
+
           // Given that messagesByTopic should be in order by receiveTime
           // We need to combine all of the messages into a single array and sorted by receive time
           forEachSortedArrays(
-            Array.from(Object.keys(block.messagesByTopic)).map(
-              (topic) => block.messagesByTopic[topic] ?? [],
-            ),
+            Array.from(topicsToPreloadForPanel).map((topic) => block.messagesByTopic[topic] ?? []),
             (a, b) => compare(a.receiveTime, b.receiveTime),
             (messageEvent) => {
               // Message blocks may contain topics that we are not subscribed to so we need to filter those out.
