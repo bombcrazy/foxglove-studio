@@ -3,7 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 import Log from "@foxglove/log";
-import { toSec } from "@foxglove/rostime";
+import { compare, toSec } from "@foxglove/rostime";
 import {
   AppSettingValue,
   MessageEvent,
@@ -282,9 +282,14 @@ function initRenderStateBuilder(): BuildRenderStateFn {
           if (!block) {
             continue;
           }
-
-          for (const messageEvents of Object.values(block.messagesByTopic)) {
-            for (const messageEvent of messageEvents) {
+          // Given that messagesByTopic should be in order by receiveTime
+          // We need to combine all of the messages into a single array and sorted by receive time
+          forEachSortedArrays(
+            Array.from(Object.keys(block.messagesByTopic)).map(
+              (topic) => block.messagesByTopic[topic] ?? [],
+            ),
+            (a, b) => compare(a.receiveTime, b.receiveTime),
+            (messageEvent) => {
               // Message blocks may contain topics that we are not subscribed to so we need to filter those out.
               // We use the topicNoConversions and topicConversions to determine if we should include the message event
 
@@ -309,8 +314,8 @@ function initRenderStateBuilder(): BuildRenderStateFn {
                   });
                 }
               }
-            }
-          }
+            },
+          );
         }
       }
       prevBlocks = newBlocks;
@@ -370,3 +375,43 @@ function initRenderStateBuilder(): BuildRenderStateFn {
 }
 
 export { initRenderStateBuilder };
+
+function forEachSortedArrays<Item>(
+  arrays: Item[][],
+  compareFn: (a: Item, b: Item) => number,
+  forEach: (item: Item) => void,
+) {
+  const cursors: number[] = Array(arrays.length).fill(0);
+  if (arrays.length === 0) {
+    return;
+  }
+  for (;;) {
+    let minCursorIndex = undefined;
+    for (let i = 0; i < cursors.length; i++) {
+      const cursor = cursors[i]!;
+      const array = arrays[i]!;
+      if (cursor >= array.length) {
+        continue;
+      }
+      const item = array[cursor]!;
+      if (minCursorIndex == undefined) {
+        minCursorIndex = i;
+      } else {
+        const minItem = arrays[minCursorIndex]![cursors[minCursorIndex]!]!;
+        if (compareFn(item, minItem) < 0) {
+          minCursorIndex = i;
+        }
+      }
+    }
+    if (minCursorIndex == undefined) {
+      break;
+    }
+    const minItem = arrays[minCursorIndex]![cursors[minCursorIndex]!];
+    if (minItem != undefined) {
+      forEach(minItem);
+      cursors[minCursorIndex]++;
+    } else {
+      break;
+    }
+  }
+}
