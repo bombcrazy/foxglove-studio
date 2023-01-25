@@ -2,11 +2,14 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import { action } from "@storybook/addon-actions";
 import { Story } from "@storybook/react";
 
 import { AppBar } from "@foxglove/studio-base/components/AppBar";
 import MockMessagePipelineProvider from "@foxglove/studio-base/components/MessagePipeline/MockMessagePipelineProvider";
+import Stack from "@foxglove/studio-base/components/Stack";
 import ConsoleApiContext from "@foxglove/studio-base/context/ConsoleApiContext";
+import { PlayerPresence } from "@foxglove/studio-base/players/types";
 import ConsoleApi, { User } from "@foxglove/studio-base/services/ConsoleApi";
 
 export default {
@@ -26,6 +29,15 @@ class FakeConsoleApi extends ConsoleApi {
 
 const fakeConsoleApi = new FakeConsoleApi();
 
+const actions = {
+  signIn: action("signIn"),
+  onSelectDataSourceAction: action("onSelectDataSourceAction"),
+  onMinimizeWindow: action("onMinimizeWindow"),
+  onMaximizeWindow: action("onMaximizeWindow"),
+  onUnmaximizeWindow: action("onUnmaximizeWindow"),
+  onCloseWindow: action("onCloseWindow"),
+};
+
 function Wrapper(StoryFn: Story): JSX.Element {
   return (
     <MockMessagePipelineProvider>
@@ -37,19 +49,28 @@ function Wrapper(StoryFn: Story): JSX.Element {
 }
 
 export function Default(): JSX.Element {
-  return <AppBar />;
+  return (
+    <AppBar
+      signIn={action("signIn")}
+      onSelectDataSourceAction={action("onSelectDataSourceAction")}
+    />
+  );
 }
 
 export function CustomWindowControls(): JSX.Element {
-  return <AppBar showCustomWindowControls />;
+  return <AppBar showCustomWindowControls {...actions} />;
+}
+
+export function CustomWindowControlsMaximized(): JSX.Element {
+  return <AppBar showCustomWindowControls isMaximized {...actions} />;
 }
 
 export function CustomWindowControlsDragRegion(): JSX.Element {
-  return <AppBar showCustomWindowControls debugDragRegion />;
+  return <AppBar showCustomWindowControls debugDragRegion {...actions} />;
 }
 
 export function SignInDisabled(): JSX.Element {
-  return <AppBar disableSignin />;
+  return <AppBar disableSignin {...actions} />;
 }
 
 export function UserPresent(): JSX.Element {
@@ -72,12 +93,60 @@ export function UserPresent(): JSX.Element {
     org,
   };
 
+  return <AppBar currentUser={me} {...actions} />;
+}
+
+function LabeledAppBar({ label }: React.PropsWithChildren<{ label: string }>) {
   return (
-    <AppBar
-      currentUser={me}
-      signIn={() => {
-        // noop
-      }}
-    />
+    <Stack direction="row">
+      <div style={{ flex: "0 0 100px" }}>{label}</div>
+      <div style={{ flex: "1 0 auto" }}>
+        <AppBar {...actions} />
+      </div>
+    </Stack>
   );
 }
+
+export function DataSources(): JSX.Element {
+  return (
+    <Stack overflowY="auto">
+      {[
+        PlayerPresence.NOT_PRESENT,
+        PlayerPresence.INITIALIZING,
+        PlayerPresence.RECONNECTING,
+        PlayerPresence.BUFFERING,
+        PlayerPresence.PRESENT,
+        PlayerPresence.ERROR,
+      ].map((presence) => (
+        <MockMessagePipelineProvider key={presence} name="example" presence={presence}>
+          <LabeledAppBar label={presence} {...actions} />
+        </MockMessagePipelineProvider>
+      ))}
+      {[
+        "foxglove-data-platform",
+        "mcap-local-file",
+        "ros1-local-bagfile",
+        "ros2-local-bagfile",
+        "ulog-local-file",
+        "sample-nuscenes",
+        "remote-file",
+        "ros1-socket",
+        "ros2-socket",
+        "rosbridge-websocket",
+        "foxglove-websocket",
+        "velodyne-device",
+        "some other source type",
+      ].map((sourceId) => (
+        <MockMessagePipelineProvider
+          key={sourceId}
+          name="example"
+          presence={PlayerPresence.ERROR}
+          urlState={{ sourceId }}
+        >
+          <LabeledAppBar label={sourceId} {...actions} />
+        </MockMessagePipelineProvider>
+      ))}
+    </Stack>
+  );
+}
+DataSources.parameters = { colorScheme: "light" };
