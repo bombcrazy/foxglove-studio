@@ -674,14 +674,14 @@ export function ThreeDeeRender({ context }: { context: PanelExtensionContext }):
     let cursor = allFramesCursor.index;
 
     if (!allFrames || allFrames.length === 0) {
+      // when tf preloading is disabled
       if (cursor > -1) {
-        // reset transform tree and cursor when preloaded messages are cleared so that it reads only from currentframe
+        // cursor when preloaded messages are cleared
         setAllFramesCursor({
           index: -1,
           currentTimeReached: { sec: 0, nsec: 0 },
           lastReadMessage: undefined,
         });
-        renderer.clear("clear-all");
       }
       return;
     }
