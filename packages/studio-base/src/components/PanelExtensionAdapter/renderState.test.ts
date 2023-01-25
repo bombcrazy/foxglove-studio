@@ -123,6 +123,171 @@ describe("renderState", () => {
     });
   });
 
+  it("should make allFrames sorted receive time across sorted messagesInTopic", () => {
+    const buildRenderState = initRenderStateBuilder();
+    const state = buildRenderState({
+      watchedFields: new Set(["topics", "allFrames"]),
+      playerState: {
+        presence: PlayerPresence.INITIALIZING,
+        capabilities: [],
+        profile: undefined,
+        playerId: "test",
+        progress: {
+          messageCache: {
+            startTime: { sec: 0, nsec: 0 },
+            blocks: [
+              {
+                sizeInBytes: 0,
+                messagesByTopic: {
+                  test1: [
+                    {
+                      topic: "test1",
+                      schemaName: "schema",
+                      receiveTime: { sec: 1, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                    {
+                      topic: "test1",
+                      schemaName: "schema",
+                      receiveTime: { sec: 3, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                    {
+                      topic: "test1",
+                      schemaName: "schema",
+                      receiveTime: { sec: 5, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                    {
+                      topic: "test1",
+                      schemaName: "schema",
+                      receiveTime: { sec: 6, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                  ],
+                  test2: [
+                    {
+                      topic: "test2",
+                      schemaName: "schema",
+                      receiveTime: { sec: 2, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                    {
+                      topic: "test2",
+                      schemaName: "schema",
+                      receiveTime: { sec: 4, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                    {
+                      topic: "test2",
+                      schemaName: "schema",
+                      receiveTime: { sec: 7, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                    {
+                      topic: "test2",
+                      schemaName: "schema",
+                      receiveTime: { sec: 8, nsec: 0 },
+                      sizeInBytes: 1,
+                      message: { from: "allFrames" },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+      appSettings: undefined,
+      currentFrame: [],
+      colorScheme: undefined,
+      globalVariables: {},
+      hoverValue: undefined,
+      sharedPanelState: {},
+      sortedTopics: [
+        { name: "test1", schemaName: "schema" },
+        { name: "test2", schemaName: "schema" },
+      ],
+      subscriptions: [
+        { topic: "test1", preload: true },
+        { topic: "test2", preload: true },
+      ],
+      messageConverters: [],
+    });
+
+    expect(state).toEqual({
+      topics: [
+        { name: "test1", schemaName: "schema", datatype: "schema" },
+        { name: "test2", schemaName: "schema", datatype: "schema" },
+      ],
+      allFrames: [
+        {
+          topic: "test1",
+          receiveTime: { nsec: 0, sec: 1 },
+          schemaName: "schema",
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test2",
+          schemaName: "schema",
+          receiveTime: { nsec: 0, sec: 2 },
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test1",
+          receiveTime: { nsec: 0, sec: 3 },
+          schemaName: "schema",
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test2",
+          schemaName: "schema",
+          receiveTime: { nsec: 0, sec: 4 },
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test1",
+          receiveTime: { nsec: 0, sec: 5 },
+          schemaName: "schema",
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test1",
+          schemaName: "schema",
+          receiveTime: { nsec: 0, sec: 6 },
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test2",
+          receiveTime: { nsec: 0, sec: 7 },
+          schemaName: "schema",
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+        {
+          topic: "test2",
+          schemaName: "schema",
+          receiveTime: { nsec: 0, sec: 8 },
+          sizeInBytes: 1,
+          message: { from: "allFrames" },
+        },
+      ],
+    });
+  });
+
   it("should support subscribing to original and converted schemas", () => {
     const buildRenderState = initRenderStateBuilder();
     const state = buildRenderState({
