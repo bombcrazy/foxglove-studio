@@ -2,8 +2,6 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-export type Foo = Foo;
-
 // Valid types for parameter data (such as rosparams)
 export type ParameterValue =
   | undefined
@@ -13,9 +11,9 @@ export type ParameterValue =
   | Date
   | Uint8Array
   | ParameterValue[]
-  | ParameterStruct;
+  | { [key: string]: ParameterValue };
 
-export type ParameterStruct = Record<string, ParameterValue>;
+export type ParameterStruct = { [key: string]: ParameterValue };
 
 // Valid types for global variables
 export type VariableValue =
@@ -24,9 +22,9 @@ export type VariableValue =
   | number
   | string
   | VariableValue[]
-  | VariableStruct;
+  | { [key: string]: VariableValue };
 
-export type VariableStruct = Record<string, VariableValue>;
+export type VariableStruct = { [key: string]: VariableValue };
 
 // Valid types for application settings
 export type AppSettingValue = string | number | boolean | undefined;
@@ -272,7 +270,7 @@ export type PanelExtensionContext = {
    * Set the transient state shared by panels of the same type as the caller of this function.
    * This will not be persisted in the layout.
    */
-  setSharedPanelState: (state: undefined | Readonly<string, unknown>) => void;
+  setSharedPanelState: (state: undefined | Record<string, unknown>) => void;
 
   /**
    * Set the value of variable name to value.

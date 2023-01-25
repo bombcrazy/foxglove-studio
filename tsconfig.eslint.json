@@ -22,7 +22,8 @@
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "es2020"],
     "paths": {
-      "@foxglove/studio-base/*": ["./packages/studio-base/src/*"]
+      "@foxglove/studio-base/*": ["./packages/studio-base/src/*"],
+      "@foxglove/studio/*": ["../../packages/studio/src/*"]
     }
   }
 }

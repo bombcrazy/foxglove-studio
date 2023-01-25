@@ -9,7 +9,8 @@
     "declarationMap": false,
     "sourceMap": false,
     "paths": {
-      "@foxglove/studio-base/*": ["./*"]
+      "@foxglove/studio-base/*": ["./*"],
+      "@foxglove/studio/*": ["../studio/src/*"]
     },
     "experimentalDecorators": true,
     "useUnknownInCatchVariables": false,
