@@ -9,7 +9,7 @@
     "useUnknownInCatchVariables": false,
     "paths": {
       "@foxglove/studio-base/*": ["../packages/studio-base/src/*"],
-      "@foxglove/studio/*": ["../../packages/studio/src/*"]
+      "@foxglove/studio": ["../packages/studio/src"]
     }
   }
 }

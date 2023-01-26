@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist/esm",
+    "emitDeclarationOnly": true,
     "lib": ["es2020"]
   }
 }

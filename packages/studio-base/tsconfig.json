@@ -2,7 +2,7 @@
   "extends": "@foxglove/tsconfig/base",
   "include": ["./src/**/*", "./src/**/*.json", "../package.json"],
   "compilerOptions": {
-    "rootDir": "./src",
+    "rootDir": "..",
     "baseUrl": "./src",
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "es2020", "webworker"],
@@ -10,7 +10,7 @@
     "sourceMap": false,
     "paths": {
       "@foxglove/studio-base/*": ["./*"],
-      "@foxglove/studio/*": ["../studio/src/*"]
+      "@foxglove/studio": ["../../studio/src"]
     },
     "experimentalDecorators": true,
     "useUnknownInCatchVariables": false,
