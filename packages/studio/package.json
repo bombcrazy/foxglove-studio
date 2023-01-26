@@ -6,15 +6,13 @@
     "type": "git",
     "url": "https://github.com/foxglove/studio/tree/main/packages/studio"
   },
-  "module": "dist/esm/src/index.js",
-  "main": "dist/cjs/src/index.js",
-  "typings": "dist/esm/src/index.d.ts",
+  "typings": "dist/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "prepack": "tsc -b tsconfig.json tsconfig.cjs.json"
+    "prepack": "tsc -b tsconfig.json"
   },
   "devDependencies": {
     "typescript": "4.9.4"
