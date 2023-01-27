@@ -11,13 +11,14 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-import { Typography, styled as muiStyled } from "@mui/material";
+import { Typography } from "@mui/material";
 import produce from "immer";
 import { difference, set, union } from "lodash";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import ReactDOM from "react-dom";
 import { useUpdateEffect } from "react-use";
 import { DeepPartial } from "ts-essentials";
+import { makeStyles } from "tss-react/mui";
 
 import { PanelExtensionContext, SettingsTreeAction, Topic } from "@foxglove/studio";
 import {
@@ -45,26 +46,43 @@ type Props = {
   context: PanelExtensionContext;
 };
 
-const Timestamp = muiStyled(Typography, {
-  shouldForwardProp: (prop) => prop !== "screenshotTest",
-})<{ screenshotTest: boolean }>(({ screenshotTest, theme }) => ({
-  position: "absolute",
-  margin: theme.spacing(0.5),
-  right: 0,
-  bottom: 0,
-  zIndex: theme.zIndex.appBar - 1,
-  transition: "opacity 0.1s ease-in-out",
-  opacity: 0,
-  padding: theme.spacing(0.25, 0.5),
-  userSelect: "all",
-
-  ".mosaic-window:hover &": {
-    opacity: "1",
+const useStyles = makeStyles()((theme) => ({
+  timestamp: {
+    position: "absolute",
+    margin: theme.spacing(0.5),
+    right: 0,
+    bottom: 0,
+    fontFamily: fonts.MONOSPACE,
+    zIndex: theme.zIndex.appBar - 1,
+    transition: "opacity 0.1s ease-in-out",
+    opacity: 0,
+    padding: theme.spacing(0.25, 0.5),
+    userSelect: "all",
   },
-  ...(screenshotTest && {
+  mosaicWindowHover: {
     opacity: 1,
-  }),
+  },
+  screenshotTest: {
+    opacity: 1,
+  },
 }));
+
+const Timestamp: React.FC<{
+  fontFamily: string;
+  variant: string;
+  align: string;
+  screenshotTest: boolean;
+}> = ({ screenshotTest }) => {
+  const { classes } = useStyles();
+
+  return (
+    <Typography
+      className={`${classes.timestamp} ${
+        screenshotTest ? classes.screenshotTest : ""
+      } .mosaic-window:hover & ${classes.mosaicWindowHover}`}
+    ></Typography>
+  );
+};
 
 export function ImageView({ context }: Props): JSX.Element {
   const [renderDone, setRenderDone] = useState(() => () => {});
