@@ -158,7 +158,6 @@ export class BlockLoader {
 
       const topics = this.topics;
 
-      // Load around the active block id, if the active block id changes then bail
       await this.load({ progress: args.progress });
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -166,8 +165,7 @@ export class BlockLoader {
         break;
       }
 
-      // The active block id is the same as when we started.
-      // Wait for it to possibly change.
+      // Wait for topics to possibly change.
       if (this.topics === topics) {
         await this.activeChangeCondvar.wait();
       }
@@ -187,21 +185,11 @@ export class BlockLoader {
       return;
     }
 
-    // Load blocks from beginning to end of the file
-    await this.loadBlockRange(0, this.blocks.length, args.progress);
-  }
+    log.debug("loading blocks", { topics });
+    const beginBlockId = 0;
+    const lastBlockId = this.blocks.length;
 
-  /// ---- private
-
-  // Load the blocks from [beginBlockId, lastBlockId)
-  private async loadBlockRange(
-    beginBlockId: number,
-    lastBlockId: number,
-    progress: LoadArgs["progress"],
-  ): Promise<void> {
-    const topics = this.topics;
-    log.debug("load block range", { topics, beginBlockId, lastBlockId });
-
+    const { progress } = args;
     let totalBlockSizeBytes = this.cacheSize();
 
     for (let blockId = beginBlockId; blockId < lastBlockId; ++blockId) {
@@ -322,21 +310,22 @@ export class BlockLoader {
 
           sizeInBytes += messageSizeInBytes;
 
-          if (totalBlockSizeBytes > this.maxCacheSize) {
-            const removedSize = this._removeUnusedBlockTopics();
-            totalBlockSizeBytes -= removedSize;
-            if (totalBlockSizeBytes > this.maxCacheSize) {
-              this.problemManager.addProblem("cache-full", {
-                severity: "error",
-                message: `Cache is full. Preloading for topics [${Array.from(topicsToFetch).join(
-                  ", ",
-                )}] has stopped on block ${currentBlockId + 1}/${this.blocks.length}.`,
-                tip: "Try reducing the number of topics that require preloading at a given time (e.g. in plots), or try to reduce the time range of the file.",
-              });
-              return;
-            }
-          } else {
+          if (totalBlockSizeBytes < this.maxCacheSize) {
             this.problemManager.removeProblem("cache-full");
+            continue;
+          }
+          // cache over capacity, try removing unused topics
+          const removedSize = this._removeUnusedBlockTopics();
+          totalBlockSizeBytes -= removedSize;
+          if (totalBlockSizeBytes > this.maxCacheSize) {
+            this.problemManager.addProblem("cache-full", {
+              severity: "error",
+              message: `Cache is full. Preloading for topics [${Array.from(topicsToFetch).join(
+                ", ",
+              )}] has stopped on block ${currentBlockId + 1}/${this.blocks.length}.`,
+              tip: "Try reducing the number of topics that require preloading at a given time (e.g. in plots), or try to reduce the time range of the file.",
+            });
+            return;
           }
         }
 
