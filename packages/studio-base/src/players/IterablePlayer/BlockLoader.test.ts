@@ -270,10 +270,13 @@ describe("BlockLoader", () => {
     ): AsyncIterableIterator<Readonly<IteratorResult>> {
       for (let i = 0; i < msgEvents.length; ++i) {
         const msgEvent = msgEvents[i]!;
-        yield {
-          type: "message-event",
-          msgEvent,
-        };
+        // need to filter iterator by requested topics since there's messages from more than 1 topic in here
+        if (_args.topics.includes(msgEvent.topic)) {
+          yield {
+            type: "message-event",
+            msgEvent,
+          };
+        }
       }
     };
 
@@ -319,6 +322,7 @@ describe("BlockLoader", () => {
     loader.setTopics(new Set("b"));
 
     count = 0;
+    // at the end of loading "b" topic it should have removed the "a" topic as its no longer used.
     await loader.startLoading({
       progress: async (progress) => {
         count += 1;
@@ -355,8 +359,7 @@ describe("BlockLoader", () => {
         }
       },
     });
-    // need to figure out why it's filing the messages under unexpected topics
-    consoleErrorMock.mockClear();
+    expect.assertions(2);
   });
 
   it("should avoid emitting progress when nothing changed", async () => {

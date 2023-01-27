@@ -309,7 +309,7 @@ export class BlockLoader {
           if (!arr) {
             this.problemManager.addProblem(problemKey, {
               severity: "error",
-              message: `Received a messaged on an unexpected topic: ${msgTopic}.`,
+              message: `Received a message on an unexpected topic: ${msgTopic}.`,
             });
 
             continue;
