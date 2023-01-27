@@ -45,7 +45,7 @@ export type NodeEditorProps = {
 export const NODE_HEADER_MIN_HEIGHT = 35;
 
 const useStyles = makeStyles()((theme) => ({
-  editButton: {
+  actionButton: {
     padding: theme.spacing(0.5),
   },
   editNameField: {
@@ -322,7 +322,7 @@ function NodeEditorComponent(props: NodeEditorProps): JSX.Element {
               InputProps={{
                 endAdornment: (
                   <IconButton
-                    className={classes.editButton}
+                    className={classes.actionButton}
                     title="Rename"
                     data-node-function="edit-label"
                     color="primary"
@@ -351,7 +351,7 @@ function NodeEditorComponent(props: NodeEditorProps): JSX.Element {
         <Stack alignItems="center" direction="row">
           {settings.renamable === true && !state.editing && (
             <IconButton
-              className={classes.editButton}
+              className={classes.actionButton}
               title="Rename"
               data-node-function="edit-label"
               color="primary"
@@ -380,11 +380,22 @@ function NodeEditorComponent(props: NodeEditorProps): JSX.Element {
                 payload: { id: action.id, path: props.path },
               });
             return Icon ? (
-              <IconButton key={action.id} onClick={handler} title={action.label}>
+              <IconButton
+                key={action.id}
+                onClick={handler}
+                title={action.label}
+                className={classes.actionButton}
+              >
                 <Icon fontSize="small" />
               </IconButton>
             ) : (
-              <Button key={action.id} onClick={handler} size="small" color="inherit">
+              <Button
+                key={action.id}
+                onClick={handler}
+                size="small"
+                color="inherit"
+                className={classes.actionButton}
+              >
                 {action.label}
               </Button>
             );

@@ -412,11 +412,13 @@ declare module "@foxglove/studio" {
 
   export type SettingsIcon =
     | "Add"
+    | "Addchart"
     | "Background"
     | "Camera"
     | "Cells"
     | "Check"
     | "Circle"
+    | "Clear"
     | "Clock"
     | "Collapse"
     | "Cube"
